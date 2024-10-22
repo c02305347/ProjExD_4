@@ -240,6 +240,52 @@ class Score:
     def update(self, screen: pg.Surface):
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         screen.blit(self.image, self.rect)
+        
+        
+class Shield(pg.sprite.Sprite):
+    """
+    シールドに関するクラス
+    """
+    def __init__(self, bird: Bird, life: int):
+        """
+        シールドを生成する
+        引数1 bird：こうかとんオブジェクト
+        引数2 life：経過時間
+        """
+        super().__init__()
+        k_rect = bird.rect
+        self.image = pg.Surface((20, k_rect.height*2))
+        self.rect = self.image.get_rect()
+        color = (0, 0, 255)
+        pg.draw.rect(self.image, color, (0, 0, 20, k_rect.height*2))
+        vx, vy = bird.dire
+        angle = math.degrees(math.atan2(-vy, vx))
+        
+        # シールドの描画
+        self.image = pg.transform.rotozoom(self.image, angle, 1.0)
+        self.image.set_colorkey((0, 0, 0))
+        self.rect = self.image.get_rect()
+
+        # シールドの位置調整
+        if vx == 0 and vy != 0:  # 上下方向
+            self.rect.centerx = bird.rect.centerx
+            self.rect.centery = bird.rect.centery + vy * (k_rect.height + 10)
+        elif vx != 0 and vy == 0:  # 左右方向
+            self.rect.centerx = bird.rect.centerx + vx * (k_rect.width + 10)
+            self.rect.centery = bird.rect.centery
+        else:
+            self.rect.centerx = bird.rect.centerx + vx * (k_rect.width + 10)
+            self.rect.centery = bird.rect.centery + vy * (k_rect.height + 10)
+
+        self.life = life
+
+    def update(self):
+        """
+        経過時間によってシールドを削除する
+        """
+        self.life -= 1
+        if self.life < 0:
+            self.kill()
 
 
 def main():
@@ -253,6 +299,7 @@ def main():
     beams = pg.sprite.Group()
     exps = pg.sprite.Group()
     emys = pg.sprite.Group()
+    shields = pg.sprite.Group()
 
     tmr = 0
     clock = pg.time.Clock()
@@ -263,6 +310,9 @@ def main():
                 return 0
             if event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_TAB and len(shields) == 0 and score.value >= 50:
+                score.value -= 50
+                shields.add(Shield(bird, 400))
         screen.blit(bg_img, [0, 0])
 
         if tmr%200 == 0:  # 200フレームに1回，敵機を出現させる
@@ -281,6 +331,9 @@ def main():
         for bomb in pg.sprite.groupcollide(bombs, beams, True, True).keys():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
+            
+        for bomb in pg.sprite.groupcollide(bombs, shields, True, False).keys():
+            exps.add(Explosion(bomb, 50)) # 爆発エフェクト
 
         if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
             bird.change_img(8, screen) # こうかとん悲しみエフェクト
@@ -299,6 +352,8 @@ def main():
         exps.update()
         exps.draw(screen)
         score.update(screen)
+        shields.draw(screen)
+        shields.update()
         pg.display.update()
         tmr += 1
         clock.tick(50)
