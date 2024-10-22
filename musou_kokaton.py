@@ -283,6 +283,36 @@ class Score:
         screen.blit(self.image, self.rect)
 
 
+
+
+class EMP:
+    def __init__(self,emys: pg.sprite.Group,Bombs: pg.sprite.Group,screen : pg.surface):
+        for emy in emys:
+            emy.interval = float("inf")
+            emy.image =pg.transform.laplacian(emy.image)
+            emy.image.set_colorkey((0,0,0))
+        for bomb in Bombs:
+            bomb.speed /=2
+            bomb.state = "inactive"
+        
+        self.image = pg.Surface((WIDTH,HEIGHT))
+        pg.draw.rect(self.image, (255,255,0), (0, 0, WIDTH, HEIGHT))
+        self.image.set_alpha(100)
+        screen.blit(self.image,[0,0])
+        pg.display.update()
+        time.sleep(0.05)
+
+
+
+
+
+
+
+
+
+
+
+
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -309,6 +339,10 @@ def main():
                 beams.add(*neo_beam.gen_beams())
             elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
                 beams.add(Beam(bird))
+            if event.type == pg.KEYDOWN and event.key == pg.K_e:
+                if score.value >= 20:
+                    score.value -=20
+                    EMP(emys,bombs,screen)
 
             if event.type  == pg.KEYDOWN and event.key == pg.K_0:
                 if score.value > 200:
@@ -347,6 +381,8 @@ def main():
             time.sleep(2)
             return
         
+
+
         gravity.update()
         gravity.draw(screen)
 
