@@ -175,7 +175,7 @@ class NeoBeam(pg.sprite.Sprite):
         self.bird = bird
         self.num = num
 
-    def gen_beams(self) -> list:
+    def gen_beams(self) :
         """
         指定されたビーム数のインスタンスを生成し、リストで返す
         戻り値: Beamオブジェクトのリスト
