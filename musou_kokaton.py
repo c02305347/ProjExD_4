@@ -122,15 +122,16 @@ class Bird(pg.sprite.Sprite):
             self.image = self.imgs[self.dire]
 
         # 無敵状態の発動チェック
-        if key_lst[pg.K_RSHIFT] and score.value >= 10 and self.state == "normal":  # 発動条件：スコアが100より大
+        if key_lst[pg.K_RSHIFT] and score.value >= 100 and self.state == "normal":  # 発動条件：スコアが100より大
             self.state = "hyper"
             self.hyper_life = 500  # 発動時間：500フレーム
-            score.value -= 10  # 消費スコア：100
+            score.value -= 100  # 消費スコア：100
             self.image = pg.transform.laplacian(self.image)  # 画像を変換
 
         # 無敵状態の持続
         if self.state == "hyper":
             self.hyper_life -= 1
+            self.image = pg.transform.laplacian(self.image)  # 画像を変換
             if self.hyper_life <= 0:
                 self.state = "normal"  # 無敵状態終了
                 self.image = self.imgs[self.dire]  # 画像を元に戻す
@@ -324,16 +325,6 @@ class EMP:
         time.sleep(0.05)
 
 
-
-
-
-
-
-
-
-
-
-
 def main():
     pg.display.set_caption("真！こうかとん無双")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
@@ -397,23 +388,15 @@ def main():
 
         # こうかとんと爆弾の衝突判定
         if len(pg.sprite.spritecollide(bird, bombs, True)) != 0:
-            bird.change_img(8, screen) # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
-        
-
+            if bird.state != "hyper":  # 無敵状態でない場合
+                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                score.update(screen)
+                pg.display.update()
+                time.sleep(2)
+                return
 
         gravity.update()
         gravity.draw(screen)
-        if bird.state != "hyper":  # 無敵状態でない場合
-            bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
-
         bird.update(key_lst, screen, score)  # スコアも渡す
         beams.update()
         beams.draw(screen)
