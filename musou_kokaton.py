@@ -109,6 +109,13 @@ class Bird(pg.sprite.Sprite):
         引数2 screen：画面Surface
         引数3 score：スコアオブジェクト
         """
+        
+        # 左SHIFTが押されていたら速度を20に設定
+        if key_lst[pg.K_LSHIFT]:
+            self.speed = 20
+        else:
+            self.speed = 10
+            
         sum_mv = [0, 0]
         for k, mv in __class__.delta.items():
             if key_lst[k]:
